@@ -1,0 +1,371 @@
+{
+  "Agartala|Tripura": [
+    {
+      "name": "Ramnagar",
+      "reason": "26.1 km away",
+      "got": "Ramnagar"
+    }
+  ],
+  "Ambala|Haryana": [
+    {
+      "name": "Ambala City",
+      "reason": "resolved to the city itself"
+    },
+    {
+      "name": "Jagadhri Road",
+      "reason": "39.5 km away",
+      "got": "Jagadhri Road"
+    }
+  ],
+  "Ayodhya|Uttar Pradesh": [
+    {
+      "name": "Faizabad",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Baripada|Odisha": [
+    {
+      "name": "Gandhi Square",
+      "reason": "same point as Station Square"
+    }
+  ],
+  "Bhind|Madhya Pradesh": [
+    {
+      "name": "Bhind Road",
+      "reason": "54.7 km away",
+      "got": "Bhind Road"
+    }
+  ],
+  "Bilaspur|Himachal Pradesh": [
+    {
+      "name": "Lakhanpur",
+      "reason": "29.7 km away",
+      "got": "Housing Board Colony Lakhanpur Bilaspur"
+    }
+  ],
+  "Bomdila|Arunachal Pradesh": [
+    {
+      "name": "Upper Bomdila",
+      "reason": "resolved to the city itself"
+    },
+    {
+      "name": "Lower Bomdila",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Churachandpur|Manipur": [
+    {
+      "name": "Lamka",
+      "reason": "resolved to the city itself"
+    },
+    {
+      "name": "Hiangtam",
+      "reason": "34.7 km away",
+      "got": "Bualkot"
+    }
+  ],
+  "Dhanbad|Jharkhand": [
+    {
+      "name": "Sindri",
+      "reason": "28.5 km away",
+      "got": "Sindri"
+    }
+  ],
+  "Durg|Chhattisgarh": [
+    {
+      "name": "Pulgaon",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Haldwani|Uttarakhand": [
+    {
+      "name": "Nainital Road",
+      "reason": "19.4 km away",
+      "got": "Nainital Road"
+    },
+    {
+      "name": "Kathgodam",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Hamirpur|Himachal Pradesh": [
+    {
+      "name": "Bajuri",
+      "reason": "resolved to the city itself"
+    },
+    {
+      "name": "Hamirpur Bazaar",
+      "reason": "same point as Gandhi Chowk"
+    }
+  ],
+  "Itanagar|Arunachal Pradesh": [
+    {
+      "name": "Chimpu",
+      "reason": "resolved to the city itself"
+    },
+    {
+      "name": "Doimukh",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Jagdalpur|Chhattisgarh": [
+    {
+      "name": "Dharampura",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Jharsuguda|Odisha": [
+    {
+      "name": "Beheramal",
+      "reason": "25.9 km away",
+      "got": "Beheramal"
+    }
+  ],
+  "Jorhat|Assam": [
+    {
+      "name": "Rajabari",
+      "reason": "28.9 km away",
+      "got": "Rajabari"
+    }
+  ],
+  "Kathua|Jammu and Kashmir": [
+    {
+      "name": "Muthi",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Kishangarh|Rajasthan": [
+    {
+      "name": "Station Road Kishangarh",
+      "reason": "same point as Madanganj"
+    }
+  ],
+  "Kolkata|West Bengal": [
+    {
+      "name": "Salt Lake",
+      "reason": "147.8 km away",
+      "got": "Bidhannagar"
+    }
+  ],
+  "Kullu|Himachal Pradesh": [
+    {
+      "name": "Kasol",
+      "reason": "20.2 km away",
+      "got": "Kasol"
+    }
+  ],
+  "Lucknow|Uttar Pradesh": [
+    {
+      "name": "Gomti Nagar Extension",
+      "reason": "same point as Gomti Nagar"
+    },
+    {
+      "name": "Aashiana",
+      "reason": "same point as Ashiyana"
+    }
+  ],
+  "Malda|West Bengal": [
+    {
+      "name": "English Bazar",
+      "reason": "resolved to the city itself"
+    },
+    {
+      "name": "Manikchak",
+      "reason": "25.4 km away",
+      "got": "Manikchak"
+    }
+  ],
+  "Manali|Himachal Pradesh": [
+    {
+      "name": "Vashisht",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Mandsaur|Madhya Pradesh": [
+    {
+      "name": "Mhow Neemuch Road",
+      "reason": "58.3 km away",
+      "got": "Mhow - Neemuch Road"
+    }
+  ],
+  "Mangan|Sikkim": [
+    {
+      "name": "Lachung",
+      "reason": "29.0 km away",
+      "got": "Lachung"
+    }
+  ],
+  "Meerut|Uttar Pradesh": [
+    {
+      "name": "Garh Road",
+      "reason": "21.2 km away",
+      "got": "Garh Road"
+    }
+  ],
+  "Mokokchung|Nagaland": [
+    {
+      "name": "Mokokchung Town",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Morena|Madhya Pradesh": [
+    {
+      "name": "MS Road",
+      "reason": "78.1 km away",
+      "got": "Morena - Sheopur Road"
+    }
+  ],
+  "Murwara|Madhya Pradesh": [
+    {
+      "name": "Jhinjhari",
+      "reason": "18.8 km away",
+      "got": "Jhinjhari"
+    }
+  ],
+  "Nagaon|Assam": [
+    {
+      "name": "Nagaon Town",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Naharlagun|Arunachal Pradesh": [
+    {
+      "name": "Model Village",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Nalgonda|Telangana": [
+    {
+      "name": "Devarakonda Road",
+      "reason": "52.4 km away",
+      "got": "Devarakonda Road"
+    }
+  ],
+  "Neemuch|Madhya Pradesh": [
+    {
+      "name": "Neemuch City",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Nongpoh|Meghalaya": [
+    {
+      "name": "Umiam",
+      "reason": "25.1 km away",
+      "got": "Umiam Lake Viewpoint"
+    },
+    {
+      "name": "Byrnihat",
+      "reason": "20.5 km away",
+      "got": "Byrnihat"
+    },
+    {
+      "name": "Nongpoh Bazaar",
+      "reason": "same point as Nongpoh Market"
+    }
+  ],
+  "Pali|Rajasthan": [
+    {
+      "name": "Sumerpur Road",
+      "reason": "37.7 km away",
+      "got": "Sumerpur Road"
+    }
+  ],
+  "Pasighat|Arunachal Pradesh": [
+    {
+      "name": "Rayang",
+      "reason": "27.7 km away",
+      "got": "Pasighat"
+    }
+  ],
+  "Patna|Bihar": [
+    {
+      "name": "Patna City",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Ramagundam|Telangana": [
+    {
+      "name": "Yaiter",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Silvassa|Dadra and Nagar Haveli and Daman and Diu": [
+    {
+      "name": "Dadra",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Singrauli|Madhya Pradesh": [
+    {
+      "name": "Baidhan",
+      "reason": "same point as Waidhan"
+    }
+  ],
+  "Sopore|Jammu and Kashmir": [
+    {
+      "name": "Seer Jagir",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Surat|Gujarat": [
+    {
+      "name": "Citylight",
+      "reason": "same point as City Light"
+    }
+  ],
+  "Tawang|Arunachal Pradesh": [
+    {
+      "name": "Lhou",
+      "reason": "19.4 km away",
+      "got": "Lhou"
+    },
+    {
+      "name": "Jang",
+      "reason": "23.1 km away",
+      "got": "Jang"
+    }
+  ],
+  "Thrissur|Kerala": [
+    {
+      "name": "Poonkunnam",
+      "reason": "same point as Punkunnam"
+    }
+  ],
+  "Tuensang|Nagaland": [
+    {
+      "name": "Tuensang Town",
+      "reason": "resolved to the city itself"
+    },
+    {
+      "name": "Tuensang Village",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Tumakuru|Karnataka": [
+    {
+      "name": "Shettihalli",
+      "reason": "60.3 km away",
+      "got": "Shettihalli"
+    }
+  ],
+  "Udhampur|Jammu and Kashmir": [
+    {
+      "name": "Sakter",
+      "reason": "resolved to the city itself"
+    }
+  ],
+  "Udupi|Karnataka": [
+    {
+      "name": "Santhekatte",
+      "reason": "22.8 km away",
+      "got": "Santhekatte"
+    }
+  ],
+  "Vidisha|Madhya Pradesh": [
+    {
+      "name": "Bareth Road",
+      "reason": "42.9 km away",
+      "got": "Bareth Road"
+    }
+  ]
+}

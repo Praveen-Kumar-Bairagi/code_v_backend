@@ -1,0 +1,12 @@
+node_modules/
+.env.local
+.env.development
+.env
+*.log
+public/user/*
+!public/user/.gitkeep
+public/chat-themes/uploads/*
+!public/chat-themes/uploads/.gitkeep
+private/captures/**
+!private/captures/.gitkeep
+.env.example
