@@ -56,12 +56,16 @@ function broadcastPresence(io, userId) {
   io.to(`presence:${userId}`).emit('presence:update', { userId, online });
 }
 
+const MAX_LIVE_FRAME_CHARS = 2_500_000; // ~1.8MB binary JPEG as base64
+
 function initSocket(httpServer) {
   const io = new Server(httpServer, {
     cors: {
       origin: '*',
       methods: ['GET', 'POST'],
     },
+    // Live JPEG frames over the wire
+    maxHttpBufferSize: 3e6,
     // Detect killed apps / dropped connections within ~25s so "Online" doesn't linger.
     pingInterval: 15000,
     pingTimeout: 10000,
@@ -149,6 +153,28 @@ function registerAdminHandlers(io, socket) {
   socket.on('location:unwatch', (userId) => {
     if (userId) socket.leave(`admin:loc:${userId}`);
   });
+
+  socket.on('capture:watch', async (userId, ack) => {
+    try {
+      if (!userId) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'userId required' });
+        return;
+      }
+      const user = await User.findByPk(userId, { attributes: ['id', 'isActive'] });
+      if (!user || !user.isActive) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'User not found' });
+        return;
+      }
+      socket.join(`admin:capture:${user.id}`);
+      if (typeof ack === 'function') ack({ ok: true, userId: user.id });
+    } catch (err) {
+      if (typeof ack === 'function') ack({ ok: false, error: err.message || 'Failed' });
+    }
+  });
+
+  socket.on('capture:unwatch', (userId) => {
+    if (userId) socket.leave(`admin:capture:${userId}`);
+  });
 }
 
 function registerUserHandlers(io, socket) {
@@ -169,6 +195,48 @@ function registerUserHandlers(io, socket) {
 
   socket.on('disconnect', () => {
     void broadcastPresence(io, userId);
+  });
+
+  /** Near-live screen JPEG for admin viewers (not persisted). */
+  socket.on('capture:live-frame', async (payload, ack) => {
+    try {
+      const sessionId = payload?.sessionId;
+      const data = typeof payload?.data === 'string' ? payload.data : '';
+      if (!sessionId || !data) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'sessionId and data required' });
+        return;
+      }
+      if (data.length > MAX_LIVE_FRAME_CHARS) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Frame too large' });
+        return;
+      }
+
+      const { CaptureSession } = require('../models');
+      const session = await CaptureSession.findByPk(sessionId, {
+        attributes: ['id', 'userId', 'status'],
+      });
+      if (
+        !session ||
+        String(session.userId) !== String(userId) ||
+        session.status !== 'active'
+      ) {
+        if (typeof ack === 'function') ack({ ok: false, error: 'Session not active' });
+        return;
+      }
+
+      io.to(`admin:capture:${userId}`).emit('capture:live-frame', {
+        userId: String(userId),
+        sessionId: session.id,
+        mimeType: payload.mimeType || 'image/jpeg',
+        width: payload.width != null ? Number(payload.width) : null,
+        height: payload.height != null ? Number(payload.height) : null,
+        at: payload.at || new Date().toISOString(),
+        data,
+      });
+      if (typeof ack === 'function') ack({ ok: true });
+    } catch (err) {
+      if (typeof ack === 'function') ack({ ok: false, error: err.message || 'Failed' });
+    }
   });
 
   /** Live GPS from the phone (foreground socket). Always keyed by authenticated userId. */
