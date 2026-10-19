@@ -7,8 +7,10 @@ const env = require('../config/env');
 
 const ROOT = path.resolve(__dirname, '../../private/captures');
 const MAX_BYTES = 4 * 1024 * 1024;
+const MAX_RECORDING_BYTES = 100 * 1024 * 1024;
 const MAX_DIMENSION = 4096;
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+const ALLOWED_RECORDING_MIME = new Set(['video/webm', 'video/mp4']);
 
 function ensureRoot() {
   if (!fs.existsSync(ROOT)) {
@@ -60,6 +62,31 @@ async function saveCaptureBuffer({ userId, sessionId, buffer, mimeType }) {
   return { storageKey: rel, absPath: abs, byteSize: buffer.length };
 }
 
+function assertRecordingUpload({ mimetype, size }) {
+  if (!ALLOWED_RECORDING_MIME.has(String(mimetype || '').toLowerCase())) {
+    const err = new Error('Only WebM or MP4 recordings are allowed');
+    err.statusCode = 400;
+    throw err;
+  }
+  if (!size || size <= 0 || size > MAX_RECORDING_BYTES) {
+    const err = new Error(`Recording must be between 1 byte and ${MAX_RECORDING_BYTES} bytes`);
+    err.statusCode = 400;
+    throw err;
+  }
+}
+
+async function saveRecordingBuffer({ userId, sessionId, buffer, mimeType }) {
+  ensureRoot();
+  const id = crypto.randomUUID();
+  const ext = String(mimeType || '').includes('mp4') ? 'mp4' : 'webm';
+  const folder = sessionId ? String(sessionId) : 'recordings';
+  const rel = path.posix.join(String(userId), folder, `${id}.${ext}`);
+  const abs = path.join(ROOT, userId, folder, `${id}.${ext}`);
+  await fsp.mkdir(path.dirname(abs), { recursive: true, mode: 0o700 });
+  await fsp.writeFile(abs, buffer, { mode: 0o600 });
+  return { storageKey: rel, absPath: abs, byteSize: buffer.length };
+}
+
 function resolveStorageKey(storageKey) {
   const safe = path.normalize(String(storageKey || '')).replace(/^(\.\.(\/|\\|$))+/, '');
   const abs = path.join(ROOT, safe);
@@ -85,9 +112,14 @@ async function deleteCaptureFile(storageKey) {
   }
 }
 
-function signAccessToken({ screenshotId, adminId }, expiresIn = '5m') {
+function signAccessToken({ screenshotId, recordingId, adminId }, expiresIn = '5m') {
   return jwt.sign(
-    { purpose: 'capture_access', screenshotId, adminId },
+    {
+      purpose: 'capture_access',
+      screenshotId: screenshotId || null,
+      recordingId: recordingId || null,
+      adminId,
+    },
     env.jwt.secret,
     { expiresIn }
   );
@@ -95,7 +127,7 @@ function signAccessToken({ screenshotId, adminId }, expiresIn = '5m') {
 
 function verifyAccessToken(token) {
   const decoded = jwt.verify(token, env.jwt.secret);
-  if (decoded.purpose !== 'capture_access' || !decoded.screenshotId) {
+  if (decoded.purpose !== 'capture_access' || (!decoded.screenshotId && !decoded.recordingId)) {
     const err = new Error('Invalid access token');
     err.statusCode = 401;
     throw err;
@@ -106,9 +138,12 @@ function verifyAccessToken(token) {
 module.exports = {
   ROOT,
   MAX_BYTES,
+  MAX_RECORDING_BYTES,
   dayKeyFrom,
   assertImageUpload,
+  assertRecordingUpload,
   saveCaptureBuffer,
+  saveRecordingBuffer,
   readCaptureFile,
   deleteCaptureFile,
   signAccessToken,

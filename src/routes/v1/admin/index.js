@@ -352,8 +352,19 @@ router.post(
   adminController.reviewBioRequest
 );
 
+const multer = require('multer');
 const captureService = require('../../../services/v1/admin/captureService');
-const { verifyAccessToken } = require('../../../services/captureStorage');
+const { verifyAccessToken, MAX_RECORDING_BYTES } = require('../../../services/captureStorage');
+
+const recordingUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_RECORDING_BYTES || 100 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ok = ['video/webm', 'video/mp4'].includes(file.mimetype);
+    if (ok) cb(null, true);
+    else cb(new Error('Only WebM or MP4 recordings are allowed'));
+  },
+});
 
 router.get('/users/:userId/capture/device', authenticateAdmin, async (req, res, next) => {
   try {
@@ -461,6 +472,93 @@ router.get('/capture/screenshots/:id/file', async (req, res, next) => {
 
     const { row, buffer } = await captureService.loadScreenshotFile(req.params.id);
     res.setHeader('Content-Type', row.mimeType || 'image/jpeg');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('Content-Length', buffer.length);
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post(
+  '/users/:userId/capture/recordings',
+  authenticateAdmin,
+  recordingUpload.single('video'),
+  async (req, res, next) => {
+    try {
+      const data = await captureService.saveRecording(req.adminId, req.params.userId, req.file, req.body || {});
+      res.status(201).json({ success: true, data });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.get('/users/:userId/capture/recordings', authenticateAdmin, async (req, res, next) => {
+  try {
+    res.json({
+      success: true,
+      data: await captureService.listRecordings(req.params.userId, req.query),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/users/:userId/capture/recordings/delete', authenticateAdmin, async (req, res, next) => {
+  try {
+    const data = await captureService.deleteRecordings(
+      req.adminId,
+      req.params.userId,
+      req.body?.ids || []
+    );
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/capture/recordings/:id/access', authenticateAdmin, async (req, res, next) => {
+  try {
+    res.json({
+      success: true,
+      data: await captureService.getRecordingAccess(req.adminId, req.params.id),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/capture/recordings/:id/file', async (req, res, next) => {
+  try {
+    let allowed = false;
+    const header = req.headers.authorization || '';
+    if (header.startsWith('Bearer ')) {
+      try {
+        const { verifyToken } = require('../../../utils/jwt');
+        const decoded = verifyToken(header.slice(7));
+        if (decoded.purpose === 'admin' && decoded.adminId) allowed = true;
+        if (decoded.purpose === 'capture_access' && decoded.recordingId === req.params.id) {
+          allowed = true;
+        }
+      } catch {
+        /* fall through */
+      }
+    }
+    if (!allowed && req.query.token) {
+      try {
+        const decoded = verifyAccessToken(String(req.query.token));
+        if (decoded.recordingId === req.params.id) allowed = true;
+      } catch {
+        /* fall through */
+      }
+    }
+    if (!allowed) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const { row, buffer } = await captureService.loadRecordingFile(req.params.id);
+    res.setHeader('Content-Type', row.mimeType || 'video/webm');
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('Content-Length', buffer.length);
     res.send(buffer);

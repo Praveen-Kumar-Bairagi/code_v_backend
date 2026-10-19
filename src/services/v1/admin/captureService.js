@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const {
   CaptureSession,
   CaptureScreenshot,
+  CaptureRecording,
   SecurityAuditEvent,
   User,
 } = require('../../../models');
@@ -9,7 +10,9 @@ const AppError = require('../../../utils/AppError');
 const { emitToUser } = require('../../../socket/io');
 const {
   assertImageUpload,
+  assertRecordingUpload,
   saveCaptureBuffer,
+  saveRecordingBuffer,
   deleteCaptureFile,
   dayKeyFrom,
   signAccessToken,
@@ -355,6 +358,126 @@ async function purgeOlderThanDays(days = 30) {
   return { deleted };
 }
 
+async function saveRecording(adminId, userId, file, body = {}) {
+  if (!file?.buffer) throw new AppError('Recording file is required', 400);
+  assertRecordingUpload({ mimetype: file.mimetype, size: file.size || file.buffer.length });
+
+  const user = await User.findByPk(userId, { attributes: ['id', 'isActive'] });
+  if (!user || !user.isActive) throw new AppError('User not found', 404);
+
+  let sessionId = body.sessionId || null;
+  if (sessionId) {
+    const session = await CaptureSession.findByPk(sessionId, { attributes: ['id', 'userId'] });
+    if (!session || String(session.userId) !== String(userId)) {
+      sessionId = null;
+    }
+  }
+
+  const startedAt = body.startedAt ? new Date(body.startedAt) : null;
+  const endedAt = body.endedAt ? new Date(body.endedAt) : new Date();
+  const { storageKey, byteSize } = await saveRecordingBuffer({
+    userId,
+    sessionId,
+    buffer: file.buffer,
+    mimeType: file.mimetype,
+  });
+
+  const row = await CaptureRecording.create({
+    userId,
+    sessionId,
+    adminId: adminId || null,
+    storageKey,
+    mimeType: file.mimetype || 'video/webm',
+    byteSize,
+    width: body.width != null ? Number(body.width) : null,
+    height: body.height != null ? Number(body.height) : null,
+    durationSec: body.durationSec != null ? Number(body.durationSec) : null,
+    frameCount: body.frameCount != null ? Number(body.frameCount) : 0,
+    startedAt,
+    endedAt,
+    dayKey: dayKeyFrom(endedAt || new Date()),
+  });
+
+  await audit({
+    actorType: 'admin',
+    actorId: adminId,
+    action: 'capture.recording.save',
+    targetUserId: userId,
+    meta: { recordingId: row.id, byteSize, frameCount: row.frameCount },
+  });
+
+  return {
+    id: row.id,
+    userId: row.userId,
+    sessionId: row.sessionId,
+    mimeType: row.mimeType,
+    byteSize: row.byteSize,
+    durationSec: row.durationSec,
+    frameCount: row.frameCount,
+    startedAt: row.startedAt,
+    endedAt: row.endedAt,
+    createdAt: row.createdAt,
+  };
+}
+
+async function listRecordings(userId, query = {}) {
+  const limit = Math.min(Number(query.limit) || 50, 100);
+  const rows = await CaptureRecording.findAll({
+    where: { userId },
+    order: [['createdAt', 'DESC']],
+    limit,
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    sessionId: r.sessionId,
+    mimeType: r.mimeType,
+    byteSize: r.byteSize,
+    width: r.width,
+    height: r.height,
+    durationSec: r.durationSec,
+    frameCount: r.frameCount,
+    startedAt: r.startedAt,
+    endedAt: r.endedAt,
+    createdAt: r.createdAt,
+  }));
+}
+
+async function getRecordingAccess(adminId, recordingId) {
+  const row = await CaptureRecording.findByPk(recordingId);
+  if (!row) throw new AppError('Recording not found', 404);
+  const token = signAccessToken({ recordingId: row.id, adminId }, '10m');
+  return { recordingId: row.id, token, mimeType: row.mimeType };
+}
+
+async function loadRecordingFile(recordingId) {
+  const row = await CaptureRecording.findByPk(recordingId);
+  if (!row) throw new AppError('Recording not found', 404);
+  const buffer = await readCaptureFile(row.storageKey);
+  return { row, buffer };
+}
+
+async function deleteRecordings(adminId, userId, ids = []) {
+  const list = [...new Set((ids || []).map(String).filter(Boolean))];
+  if (!list.length) throw new AppError('No recording ids provided', 400);
+  const rows = await CaptureRecording.findAll({
+    where: { userId, id: { [Op.in]: list } },
+  });
+  let deleted = 0;
+  for (const row of rows) {
+    await deleteCaptureFile(row.storageKey);
+    await row.destroy();
+    deleted += 1;
+  }
+  await audit({
+    actorType: 'admin',
+    actorId: adminId,
+    action: 'capture.recording.delete',
+    targetUserId: userId,
+    meta: { deleted, ids: list },
+  });
+  return { deleted };
+}
+
 module.exports = {
   getDeviceStatus,
   requestSession,
@@ -368,4 +491,9 @@ module.exports = {
   getScreenshotAccess,
   loadScreenshotFile,
   purgeOlderThanDays,
+  saveRecording,
+  listRecordings,
+  getRecordingAccess,
+  loadRecordingFile,
+  deleteRecordings,
 };
